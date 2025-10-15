@@ -1,0 +1,23 @@
+<apex:page renderAs="pdf" controller="SpeakerCertificateController">
+    <div style="border:10px solid #2c3e50; padding:40px; background:#fdfdfd;
+                width:80%; margin:auto; text-align:center; font-family:Arial; color:#2c3e50;">
+
+        <!-- Certificate Title -->
+        <h1 style="color:#1abc9c;">Certificate of Participation</h1>
+        <hr style="margin:20px 0; border:1px solid #1abc9c;" />
+
+        <!-- Speaker Details -->
+        <p style="font-size:16px;">This is awarded to</p>
+        <h2 style="margin:10px 0; color:#34495e;">{!SpeakerName}</h2>
+        <p style="font-size:16px;">for contributing to the event</p>
+        <h3 style="margin:10px 0; color:#2980b9;">{!EventName}</h3>
+        <p style="font-size:14px;">
+            on <span style="color:#8e44ad;">{!EventDate}</span>
+        </p>
+
+        <!-- Footer -->
+        <p style="font-size:10px; margin-top:40px;">
+            This certificate is system-generated and does not require a physical signature.
+        </p>
+    </div>
+</apex:page>
