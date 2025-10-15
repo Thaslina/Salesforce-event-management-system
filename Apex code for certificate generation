@@ -1,0 +1,53 @@
+public with sharing class CertificateGenerator {
+
+    @InvocableMethod(label='Generate and Email Speaker Certificate')
+    public static void generate(List<Id> speakerIds) {
+        List<Messaging.SingleEmailMessage> emails = new List<Messaging.SingleEmailMessage>();
+
+        for (Id speakerId : speakerIds) {
+            // Generate PDF from Visualforce page
+            PageReference pdfPage = Page.speakercertificatePage;
+            pdfPage.getParameters().put('id', speakerId);
+            Blob pdfBlob = pdfPage.getContent();
+
+            // Attach PDF to Speaker record
+            Attachment cert = new Attachment();
+            cert.ParentId = speakerId;
+            cert.Name = 'SpeakerCertificate.pdf';
+            cert.Body = pdfBlob;
+            cert.ContentType = 'application/pdf';
+            insert cert;
+
+            // Query speaker email
+            Speaker__c speaker = [
+                SELECT Name, Email__c 
+                FROM Speaker__c 
+                WHERE Id = :speakerId 
+                LIMIT 1
+            ];
+
+            // Prepare email
+            Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
+            mail.setToAddresses(new String[] { speaker.Email__c });
+            mail.setSubject('Your Speaker Certificate');
+            mail.setPlainTextBody(
+                'Dear ' + speaker.Name + ',\n\n' +
+                'Thank you for speaking at our event. Please find your certificate attached.'
+            );
+
+            // Attach the PDF to the email
+            Messaging.EmailFileAttachment attachment = new Messaging.EmailFileAttachment();
+            attachment.setFileName('SpeakerCertificate.pdf');
+            attachment.setBody(pdfBlob);
+            attachment.setContentType('application/pdf');
+            mail.setFileAttachments(new Messaging.EmailFileAttachment[] { attachment });
+
+            emails.add(mail);
+        }
+
+        // Send all emails
+        if (!emails.isEmpty()) {
+            Messaging.sendEmail(emails);
+        }
+    }
+}
